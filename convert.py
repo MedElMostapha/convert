@@ -7,6 +7,7 @@ import argparse
 import ast
 import math
 import operator
+import re
 import sys
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, localcontext
 
@@ -283,6 +284,27 @@ def convert_size(value: str, source: str, target: str, places: int) -> str:
     return f"{format_decimal(result, places)} {target_name}"
 
 
+def shortcut_conversion(value: str, source: str, target: str, places: int) -> str:
+    """Convert using the compact -sourceTotarget syntax."""
+    try:
+        resolve_base(source)
+        resolve_base(target)
+    except ConversionError:
+        pass
+    else:
+        return convert_base(value, source, target)
+
+    try:
+        find_size(source)
+        find_size(target)
+    except ConversionError:
+        pass
+    else:
+        return convert_size(value, source, target, places)
+
+    return convert_unit(value, source, target, places)
+
+
 def percent_of(value: str, total: str, places: int) -> str:
     result = decimal(value) * decimal(total) / Decimal(100)
     return format_decimal(result, places)
@@ -376,11 +398,41 @@ def positive_places(value: str) -> int:
     return places
 
 
+SHORTCUT_PATTERN = re.compile(r"^-([^\s-]+?)[tT][oO]([^\s-]+)$")
+
+
+def compact_command(argv: list[str]) -> tuple[str, int] | None:
+    """Parse -sourceTotarget value and return its result and precision."""
+    if not argv:
+        return None
+    match = SHORTCUT_PATTERN.fullmatch(argv[0])
+    if match is None:
+        return None
+    if len(argv) not in {2, 4}:
+        raise ConversionError(
+            "syntaxe compacte : convert -sourceTotarget valeur [--precision nombre]"
+        )
+
+    places = 10
+    if len(argv) == 4:
+        if argv[2] != "--precision":
+            raise ConversionError(
+                "la syntaxe compacte accepte uniquement --precision après la valeur"
+            )
+        try:
+            places = positive_places(argv[3])
+        except (TypeError, ValueError, argparse.ArgumentTypeError) as exc:
+            raise ConversionError(str(exc)) from exc
+
+    source, target = match.groups()
+    return shortcut_conversion(argv[1], source, target, places), places
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="convert",
         description="Convertisseur numérique polyvalent sans dépendance externe.",
-        epilog="Exemples : convert base 255 dec hex | convert unit 10 km miles | convert size 1536 B MiB",
+        epilog="Exemples : convert -decTohex 255 | convert -kmTomiles 10 | convert base 255 dec hex",
     )
     parser.add_argument("--version", action="version", version="convert 1.0")
     commands = parser.add_subparsers(dest="command", metavar="COMMANDE")
@@ -417,8 +469,18 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    raw_argv = sys.argv[1:] if argv is None else argv
     parser = build_parser()
-    args = parser.parse_args(argv)
+    try:
+        compact = compact_command(raw_argv)
+        if compact is not None:
+            print(compact[0])
+            return 0
+    except ConversionError as exc:
+        print(f"convert: erreur : {exc}", file=sys.stderr)
+        return 2
+
+    args = parser.parse_args(raw_argv)
     try:
         if args.command == "base":
             print(convert_base(args.value, args.source, args.target))

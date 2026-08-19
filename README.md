@@ -12,8 +12,15 @@ From this directory, run one command:
 ./install.sh
 ```
 
-The installer places `convert` and its Python implementation in
+The installer places `convert`, `numconvert`, and the Python implementation in
 `/usr/local/bin`. It automatically requests `sudo` when needed.
+
+ImageMagick also uses the command name `convert`. To avoid any conflict, use
+`numconvert` if `convert` resolves to ImageMagick:
+
+```bash
+numconvert base 3D hex dec
+```
 
 For a user-only installation:
 
@@ -31,6 +38,25 @@ Show the complete help or the available units:
 ```bash
 convert --help
 convert list
+```
+
+### Compact syntax
+
+Conversions can also be written as one option followed by the value:
+
+```bash
+convert -decTohex 10       # a
+convert -binTodec 1010     # 10
+convert -kmTomiles 10      # 6.2137119224 mi
+convert -CToF 100          # 212 F
+convert -BToMiB 1536       # 0.0014648438 MiB
+```
+
+The source and target names are separated by `To`. The optional precision
+argument is supported too:
+
+```bash
+convert -kmTomiles 10 --precision 3
 ```
 
 ### Number bases
@@ -96,6 +122,7 @@ Supported functions include `sqrt`, `sin`, `cos`, `tan`, `log`, `log10`,
 
 - `convert.py`: conversion logic and command-line interface.
 - `convert`: executable launcher.
+- `numconvert`: conflict-free command name installed by `install.sh`.
 - `install.sh`: one-command installer.
 
 ## Requirements
