@@ -5,8 +5,8 @@ SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 PREFIX="${PREFIX:-/usr/local}"
 DEST_DIR="$PREFIX/bin"
 
-if [[ ! -f "$SCRIPT_DIR/convert" || ! -f "$SCRIPT_DIR/convert.py" ]]; then
-    printf 'Erreur : convert et convert.py doivent être dans le même dossier.\n' >&2
+if [[ ! -f "$SCRIPT_DIR/numconvert" || ! -f "$SCRIPT_DIR/numconvert.py" ]]; then
+    printf 'Erreur : numconvert et numconvert.py doivent être dans le même dossier.\n' >&2
     exit 1
 fi
 
@@ -26,18 +26,21 @@ if [[ "$PREFIX" == "/usr/local" && "$EUID" -ne 0 ]]; then
 fi
 
 install -d "$DEST_DIR"
-install -m 755 "$SCRIPT_DIR/convert.py" "$DEST_DIR/convert.py"
-install -m 755 "$SCRIPT_DIR/convert" "$DEST_DIR/convert"
-install -m 755 "$SCRIPT_DIR/convert" "$DEST_DIR/numconvert"
-
-printf 'convert installé dans %s/convert\n' "$DEST_DIR"
-printf 'Alias sans conflit : %s/numconvert\n' "$DEST_DIR"
-
-resolved_convert="$(type -P convert 2>/dev/null || true)"
-if [[ "$resolved_convert" != "$DEST_DIR/convert" ]]; then
-    printf 'Attention : convert est résolu vers %s.\n' "${resolved_convert:-une commande inconnue}"
-    printf 'Utilisez numconvert ou %s/convert.\n' "$DEST_DIR"
-    printf 'Dans Bash, `hash -r` peut être nécessaire après l’installation.\n'
+# Remove files created by older versions without touching an unrelated
+# ImageMagick or system command named convert.
+legacy_launcher="$DEST_DIR/convert"
+if [[ -f "$legacy_launcher" ]] && grep -Fq 'exec python3 "$SCRIPT_DIR/convert.py" "$@"' "$legacy_launcher"; then
+    rm -f "$legacy_launcher"
+fi
+legacy_implementation="$DEST_DIR/convert.py"
+if [[ -f "$legacy_implementation" ]] \
+    && grep -Fq 'A small, dependency-free command for common numeric conversions.' "$legacy_implementation" \
+    && grep -Fq 'class ConversionError' "$legacy_implementation"; then
+    rm -f "$legacy_implementation"
 fi
 
+install -m 755 "$SCRIPT_DIR/numconvert.py" "$DEST_DIR/numconvert.py"
+install -m 755 "$SCRIPT_DIR/numconvert" "$DEST_DIR/numconvert"
+
+printf 'numconvert installé dans %s/numconvert\n' "$DEST_DIR"
 printf 'Test : numconvert --version\n'

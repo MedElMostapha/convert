@@ -1,4 +1,4 @@
-# convert
+# numconvert
 
 A dependency-free Linux command for common numeric conversions. It uses the
 Python 3 standard library and provides one consistent interface for number
@@ -12,11 +12,11 @@ From this directory, run one command:
 ./install.sh
 ```
 
-The installer places `convert`, `numconvert`, and the Python implementation in
+The installer places `numconvert` and its Python implementation in
 `/usr/local/bin`. It automatically requests `sudo` when needed.
 
-ImageMagick also uses the command name `convert`. To avoid any conflict, use
-`numconvert` if `convert` resolves to ImageMagick:
+The command is intentionally named `numconvert` so it cannot conflict with
+ImageMagick's `convert` command:
 
 ```bash
 numconvert base 3D hex dec
@@ -28,7 +28,7 @@ For a user-only installation:
 PREFIX="$HOME/.local" ./install.sh
 ```
 
-Make sure `$HOME/.local/bin` is in your `PATH` if the `convert` command is
+Make sure `$HOME/.local/bin` is in your `PATH` if the `numconvert` command is
 not found afterwards.
 
 ## Usage
@@ -36,8 +36,8 @@ not found afterwards.
 Show the complete help or the available units:
 
 ```bash
-convert --help
-convert list
+numconvert --help
+numconvert list
 ```
 
 ### Compact syntax
@@ -45,26 +45,26 @@ convert list
 Conversions can also be written as one option followed by the value:
 
 ```bash
-convert -decTohex 10       # a
-convert -binTodec 1010     # 10
-convert -kmTomiles 10      # 6.2137119224 mi
-convert -CToF 100          # 212 F
-convert -BToMiB 1536       # 0.0014648438 MiB
+numconvert -decTohex 10       # a
+numconvert -binTodec 1010     # 10
+numconvert -kmTomiles 10      # 6.2137119224 mi
+numconvert -CToF 100          # 212 F
+numconvert -BToMiB 1536       # 0.0014648438 MiB
 ```
 
 The source and target names are separated by `To`. The optional precision
 argument is supported too:
 
 ```bash
-convert -kmTomiles 10 --precision 3
+numconvert -kmTomiles 10 --precision 3
 ```
 
 ### Number bases
 
 ```bash
-convert base 255 dec hex       # ff
-convert base 1010 bin dec      # 10
-convert base ff hex dec        # 255
+numconvert base 255 dec hex       # ff
+numconvert base 1010 bin dec      # 10
+numconvert base ff hex dec        # 255
 ```
 
 Named bases are `bin`, `oct`, `dec`, and `hex`. Numeric bases from 2 to 36 are
@@ -73,10 +73,10 @@ also supported.
 ### Physical units
 
 ```bash
-convert unit 10 km miles       # 6.2137119224 mi
-convert unit 32 F C             # 0 C
-convert unit 1 m ft              # 3.280839895 ft
-convert unit 1,5 h min           # 90 min
+numconvert unit 10 km miles       # 6.2137119224 mi
+numconvert unit 32 F C             # 0 C
+numconvert unit 1 m ft              # 3.280839895 ft
+numconvert unit 1,5 h min           # 90 min
 ```
 
 Supported unit groups include length, mass, volume, area, time, speed,
@@ -84,7 +84,7 @@ pressure, energy, power, angle, and temperature (`C`, `F`, `K`). Use
 `--precision` to control the number of decimal places:
 
 ```bash
-convert unit 10 km miles --precision 3
+numconvert unit 10 km miles --precision 3
 ```
 
 ### Computer sizes
@@ -93,8 +93,8 @@ Both decimal units (`KB`, `MB`, `GB`) and binary units (`KiB`, `MiB`, `GiB`)
 are supported:
 
 ```bash
-convert size 1536 B MiB
-convert size 1 GiB GB
+numconvert size 1536 B MiB
+numconvert size 1 GiB GB
 ```
 
 French byte aliases such as `Ko`, `Mo`, and `Go` are accepted as well.
@@ -102,7 +102,7 @@ French byte aliases such as `Ko`, `Mo`, and `Go` are accepted as well.
 ### Percentages
 
 ```bash
-convert percent 25 of 80      # 20
+numconvert percent 25 of 80      # 20
 ```
 
 ### Calculations
@@ -111,8 +111,8 @@ convert percent 25 of 80      # 20
 shell or Python runtime:
 
 ```bash
-convert calc 'sqrt(25) + 3'    # 8
-convert calc '2^8'              # 256
+numconvert calc 'sqrt(25) + 3'    # 8
+numconvert calc '2^8'              # 256
 ```
 
 Supported functions include `sqrt`, `sin`, `cos`, `tan`, `log`, `log10`,
@@ -120,9 +120,8 @@ Supported functions include `sqrt`, `sin`, `cos`, `tan`, `log`, `log10`,
 
 ## Files
 
-- `convert.py`: conversion logic and command-line interface.
-- `convert`: executable launcher.
-- `numconvert`: conflict-free command name installed by `install.sh`.
+- `numconvert.py`: conversion logic and command-line interface.
+- `numconvert`: executable launcher and command name.
 - `install.sh`: one-command installer.
 
 ## Requirements

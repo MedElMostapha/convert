@@ -221,7 +221,7 @@ def find_unit(value: str) -> tuple[str, str, Decimal]:
         for canonical, (factor, aliases) in units.items():
             if key in {normalize_unit(alias) for alias in aliases}:
                 return group, canonical, factor
-    raise ConversionError(f"unité inconnue : {value!r} (utilisez `convert list`)")
+    raise ConversionError(f"unité inconnue : {value!r} (utilisez `numconvert list`)")
 
 
 def find_temperature(value: str) -> str:
@@ -273,7 +273,7 @@ def find_size(value: str) -> tuple[str, Decimal]:
     for canonical, (factor, aliases) in SIZE_UNITS.items():
         if key in {normalize_unit(alias) for alias in aliases}:
             return canonical, factor
-    raise ConversionError(f"taille inconnue : {value!r} (utilisez `convert list`)")
+    raise ConversionError(f"taille inconnue : {value!r} (utilisez `numconvert list`)")
 
 
 def convert_size(value: str, source: str, target: str, places: int) -> str:
@@ -410,7 +410,7 @@ def compact_command(argv: list[str]) -> tuple[str, int] | None:
         return None
     if len(argv) not in {2, 4}:
         raise ConversionError(
-            "syntaxe compacte : convert -sourceTotarget valeur [--precision nombre]"
+            "syntaxe compacte : numconvert -sourceTotarget valeur [--precision nombre]"
         )
 
     places = 10
@@ -430,11 +430,11 @@ def compact_command(argv: list[str]) -> tuple[str, int] | None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="convert",
+        prog="numconvert",
         description="Convertisseur numérique polyvalent sans dépendance externe.",
-        epilog="Exemples : convert -decTohex 255 | convert -kmTomiles 10 | convert base 255 dec hex",
+        epilog="Exemples : numconvert -decTohex 255 | numconvert -kmTomiles 10 | numconvert base 255 dec hex",
     )
-    parser.add_argument("--version", action="version", version="convert 1.0")
+    parser.add_argument("--version", action="version", version="numconvert 1.0")
     commands = parser.add_subparsers(dest="command", metavar="COMMANDE")
 
     base = commands.add_parser("base", help="convertir un entier entre deux bases")
@@ -477,7 +477,7 @@ def main(argv: list[str] | None = None) -> int:
             print(compact[0])
             return 0
     except ConversionError as exc:
-        print(f"convert: erreur : {exc}", file=sys.stderr)
+        print(f"numconvert: erreur : {exc}", file=sys.stderr)
         return 2
 
     args = parser.parse_args(raw_argv)
@@ -498,7 +498,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.print_help()
             return 1
     except ConversionError as exc:
-        print(f"convert: erreur : {exc}", file=sys.stderr)
+        print(f"numconvert: erreur : {exc}", file=sys.stderr)
         return 2
     return 0
 
